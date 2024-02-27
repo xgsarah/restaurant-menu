@@ -1,6 +1,7 @@
 import React from 'react'
+import './firebase/config'
 
-const App = () => {
+const App = () => { 
   return <div>App</div>
 }
 
