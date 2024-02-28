@@ -14,6 +14,7 @@ module.exports = {
   settings: { react: { version: '18.2' } },
   plugins: ['react-refresh'],
   rules: {
+    'react/jsx-props-no-spreading': 'off',
     'react/prop-types': 'off',
     'react/jsx-no-target-blank': 'off',
     'react/function-component-definition': 'off',

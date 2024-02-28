@@ -1,15 +1,15 @@
-// components/Menu.js
 import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useSnackbar } from 'notistack'
 import { v4 as uuidv4 } from 'uuid'
-import { Chip, IconButton } from '@mui/material'
-import { Delete as DeleteIcon } from '@mui/icons-material'
+import { Chip, IconButton, Box } from '@mui/material'
+import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material'
 import { DataGrid } from '@mui/x-data-grid'
 import { deleteDoc, doc, getDocs, onSnapshot } from 'firebase/firestore'
 import { setMenuItems } from '../reducers/menuReducer'
 import { colRef, db } from '../utils/firebase/config'
 import ConfirmationDialog from './ConfirmationDialog'
+import MenuForm from './MenuForm'
 
 const OptionsRenderer = ({ options }) => {
   return (
@@ -60,6 +60,27 @@ const DeleteButton = ({ row }) => {
   )
 }
 
+const EditButton = ({ row }) => {
+  const { enqueueSnackbar } = useSnackbar()
+  const [open, setOpen] = useState(false)
+
+  const handleEdit = () => {}
+
+  return (
+    <>
+      <IconButton onClick={() => setOpen(true)}>
+        <EditIcon />
+      </IconButton>
+      <MenuForm
+        open={open}
+        handleClose={() => setOpen(false)}
+        editMode
+        values={row}
+      />
+    </>
+  )
+}
+
 const columns = [
   { field: 'id', headerName: 'id', width: 100 },
   { field: 'name', headerName: 'Name', width: 200 },
@@ -77,7 +98,12 @@ const columns = [
     field: 'actions',
     headerName: 'Actions',
     width: 100,
-    renderCell: (params) => <DeleteButton row={params.row} />,
+    renderCell: (params) => (
+      <Box>
+        <EditButton row={params.row} />
+        <DeleteButton row={params.row} />
+      </Box>
+    ),
   },
 ]
 

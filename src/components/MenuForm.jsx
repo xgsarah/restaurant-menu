@@ -1,5 +1,4 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import {
@@ -18,11 +17,11 @@ import {
 import { Add as AddIcon } from '@mui/icons-material'
 import { v4 as uuidv4 } from 'uuid'
 import { useSnackbar } from 'notistack'
-import { addDoc } from 'firebase/firestore'
+import { addDoc, doc, updateDoc } from 'firebase/firestore'
 import menuSchema from '../utils/schema'
-import { colRef } from '../utils/firebase/config'
+import { colRef, db } from '../utils/firebase/config'
 
-const MenuForm = ({ open, handleClose }) => {
+const MenuForm = ({ open, handleClose, editMode, values }) => {
   const { enqueueSnackbar } = useSnackbar()
   const [options, setOptions] = useState([])
   const {
@@ -34,20 +33,46 @@ const MenuForm = ({ open, handleClose }) => {
     resolver: yupResolver(menuSchema),
   })
 
+  useEffect(() => {
+    if (editMode) {
+      reset(values)
+      setOptions(values.options)
+    }
+  }, [editMode, reset, values])
+
   const onSubmit = (data) => {
-    const item = { ...data, options }
-    addDoc(colRef, item)
-      .then(() => {
-        enqueueSnackbar(`Successfully added ${data.name}.`, {
-          variant: 'success',
+    const { id, name, category, price, stock, cost } = data
+
+    const item = { name, category, price, stock, cost, options }
+    if (!editMode) {
+      addDoc(colRef, item)
+        .then(() => {
+          enqueueSnackbar(`Successfully added ${data.name}.`, {
+            variant: 'success',
+          })
+          handleClose()
         })
-        handleClose()
-      })
-      .catch((err) => {
-        enqueueSnackbar(err.message, {
-          variant: 'error',
+        .catch((err) => {
+          enqueueSnackbar(err.message, {
+            variant: 'error',
+          })
         })
-      })
+    } else {
+      const docRef = doc(db, 'menu-items', id)
+
+      updateDoc(docRef, item)
+        .then(() => {
+          enqueueSnackbar(`Successfully updated ${name}.`, {
+            variant: 'success',
+          })
+          handleClose()
+        })
+        .catch((err) => {
+          enqueueSnackbar(err.message, {
+            variant: 'error',
+          })
+        })
+    }
   }
 
   const handleAddOption = () => {
@@ -194,7 +219,7 @@ const MenuForm = ({ open, handleClose }) => {
             Cancel
           </Button>
           <Button variant="contained" type="submit">
-            Add
+            {editMode ? 'Update' : 'Add'}
           </Button>
         </DialogActions>
       </Container>
