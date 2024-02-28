@@ -13,14 +13,6 @@ const ActionMenu = () => {
   const dispatch = useDispatch()
   const [open, setOpen] = React.useState(false)
 
-  const handleClickOpen = () => {
-    setOpen(true)
-  }
-
-  const handleClose = () => {
-    setOpen(false)
-  }
-
   const handleSearch = (value) => {
     dispatch(filterChange(value))
   }
@@ -45,11 +37,11 @@ const ActionMenu = () => {
         variant="contained"
         size="small"
         startIcon={<AddCircleOutlineIcon />}
-        onClick={handleClickOpen}
+        onClick={() => setOpen(true)}
       >
         Add Item
       </Button>
-      <MenuForm open={open} handleClose={handleClose} />
+      <MenuForm open={open} handleClose={() => setOpen(false)} />
     </Box>
   )
 }

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import {
-  Dialog as MUIDialog,
+  Dialog,
   DialogTitle,
   DialogContent,
   TextField,
@@ -13,6 +13,7 @@ import {
   Stack,
   Chip,
   Fab,
+  InputAdornment,
 } from '@mui/material'
 import { Add as AddIcon } from '@mui/icons-material'
 import { v4 as uuidv4 } from 'uuid'
@@ -21,7 +22,7 @@ import { addDoc, doc, updateDoc } from 'firebase/firestore'
 import menuSchema from '../utils/schema'
 import { colRef, db } from '../utils/firebase/config'
 
-const MenuForm = ({ open, handleClose, editMode, values }) => {
+const MenuForm = ({ open, handleClose: onClose, editMode, values }) => {
   const { enqueueSnackbar } = useSnackbar()
   const [options, setOptions] = useState([])
   const {
@@ -33,12 +34,18 @@ const MenuForm = ({ open, handleClose, editMode, values }) => {
     resolver: yupResolver(menuSchema),
   })
 
+  const handleClose = () => {
+    onClose()
+    reset()
+    setOptions([])
+  }
+
   useEffect(() => {
     if (editMode) {
       reset(values)
       setOptions(values.options)
     }
-  }, [editMode, reset, values])
+  }, [editMode, reset, values, open])
 
   const onSubmit = (data) => {
     const { id, name, category, price, stock, cost } = data
@@ -47,10 +54,10 @@ const MenuForm = ({ open, handleClose, editMode, values }) => {
     if (!editMode) {
       addDoc(colRef, item)
         .then(() => {
+          handleClose()
           enqueueSnackbar(`Successfully added ${data.name}.`, {
             variant: 'success',
           })
-          handleClose()
         })
         .catch((err) => {
           enqueueSnackbar(err.message, {
@@ -62,10 +69,10 @@ const MenuForm = ({ open, handleClose, editMode, values }) => {
 
       updateDoc(docRef, item)
         .then(() => {
+          handleClose()
           enqueueSnackbar(`Successfully updated ${name}.`, {
             variant: 'success',
           })
-          handleClose()
         })
         .catch((err) => {
           enqueueSnackbar(err.message, {
@@ -91,7 +98,7 @@ const MenuForm = ({ open, handleClose, editMode, values }) => {
   }
 
   return (
-    <MUIDialog
+    <Dialog
       open={open}
       onClose={handleClose}
       PaperProps={{
@@ -100,6 +107,7 @@ const MenuForm = ({ open, handleClose, editMode, values }) => {
         autoComplete: 'off',
         noValidate: true,
       }}
+      disableRestoreFocus
     >
       <Container sx={{ py: 4, px: 2 }}>
         <DialogTitle>Add new item</DialogTitle>
@@ -107,6 +115,7 @@ const MenuForm = ({ open, handleClose, editMode, values }) => {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
+                autoFocus
                 {...register('name')}
                 label="Name"
                 error={!!errors.name}
@@ -115,8 +124,6 @@ const MenuForm = ({ open, handleClose, editMode, values }) => {
                 variant="outlined"
                 margin="normal"
                 required
-                autoComplete="off"
-                autoCorrect="off"
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -142,7 +149,6 @@ const MenuForm = ({ open, handleClose, editMode, values }) => {
               }}
             >
               <TextField
-                autoFocus
                 id="option-input"
                 name="options"
                 label="Option"
@@ -197,6 +203,11 @@ const MenuForm = ({ open, handleClose, editMode, values }) => {
                 variant="outlined"
                 margin="normal"
                 defaultValue={0}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">₱</InputAdornment>
+                  ),
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -210,6 +221,11 @@ const MenuForm = ({ open, handleClose, editMode, values }) => {
                 variant="outlined"
                 margin="normal"
                 defaultValue={0}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">₱</InputAdornment>
+                  ),
+                }}
               />
             </Grid>
           </Grid>
@@ -223,7 +239,7 @@ const MenuForm = ({ open, handleClose, editMode, values }) => {
           </Button>
         </DialogActions>
       </Container>
-    </MUIDialog>
+    </Dialog>
   )
 }
 

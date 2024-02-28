@@ -2,18 +2,25 @@ import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useSnackbar } from 'notistack'
 import { v4 as uuidv4 } from 'uuid'
-import { Chip, IconButton, Box } from '@mui/material'
+import { Chip, IconButton, Box, Stack } from '@mui/material'
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material'
 import { DataGrid } from '@mui/x-data-grid'
 import { deleteDoc, doc, getDocs, onSnapshot } from 'firebase/firestore'
+
 import { setMenuItems } from '../reducers/menuReducer'
 import { colRef, db } from '../utils/firebase/config'
 import ConfirmationDialog from './ConfirmationDialog'
 import MenuForm from './MenuForm'
 
 const OptionsRenderer = ({ options }) => {
-  return (
-    <>
+  return options.length ? (
+    <Stack
+      direction="row"
+      spacing={1}
+      useFlexGap
+      flexWrap="wrap"
+      sx={{ my: 1 }}
+    >
       {options.map((option) => (
         <Chip
           key={uuidv4()}
@@ -21,8 +28,8 @@ const OptionsRenderer = ({ options }) => {
           style={{ marginRight: 5, marginBottom: 5 }}
         />
       ))}
-    </>
-  )
+    </Stack>
+  ) : null
 }
 
 const DeleteButton = ({ row }) => {
@@ -61,10 +68,7 @@ const DeleteButton = ({ row }) => {
 }
 
 const EditButton = ({ row }) => {
-  const { enqueueSnackbar } = useSnackbar()
   const [open, setOpen] = useState(false)
-
-  const handleEdit = () => {}
 
   return (
     <>
@@ -81,13 +85,29 @@ const EditButton = ({ row }) => {
   )
 }
 
+const formatter = new Intl.NumberFormat('en-PH', {
+  style: 'currency',
+  currency: 'PHP',
+})
+
 const columns = [
-  { field: 'id', headerName: 'id', width: 100 },
   { field: 'name', headerName: 'Name', width: 200 },
   { field: 'category', headerName: 'Category', width: 150 },
   { field: 'stock', headerName: 'Stock', type: 'number', width: 120 },
-  { field: 'price', headerName: 'Price', type: 'number', width: 120 },
-  { field: 'cost', headerName: 'Cost', type: 'number', width: 120 },
+  {
+    field: 'price',
+    headerName: 'Price',
+    type: 'number',
+    width: 120,
+    renderCell: (params) => formatter.format(params.value),
+  },
+  {
+    field: 'cost',
+    headerName: 'Cost',
+    type: 'number',
+    width: 120,
+    renderCell: (params) => formatter.format(params.value),
+  },
   {
     field: 'options',
     headerName: 'Options',
@@ -98,6 +118,7 @@ const columns = [
     field: 'actions',
     headerName: 'Actions',
     width: 100,
+    sortable: false,
     renderCell: (params) => (
       <Box>
         <EditButton row={params.row} />
@@ -147,13 +168,19 @@ const Menu = () => {
   }, [dispatch, enqueueSnackbar])
 
   return (
-    <div style={{ height: 400, width: '100%' }}>
+    <div style={{ height: 500, width: '100%' }}>
       <DataGrid
         rows={filteredMenuItems}
         columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[5, 10, 20]}
-        checkboxSelection
+        pageSize={10}
+        pageSizeOptions={[10, 20, 30]}
+        initialState={{
+          pagination: { paginationModel: { pageSize: 10 } },
+        }}
+        getRowHeight={() => 'auto'}
+        disableColumnMenu
+        autoHeight
+        autoWidth
       />
     </div>
   )
