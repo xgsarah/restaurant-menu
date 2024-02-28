@@ -111,6 +111,16 @@ const Menu = () => {
   const { enqueueSnackbar } = useSnackbar()
   const dispatch = useDispatch()
   const menuItems = useSelector((state) => state.menu)
+  const filter = useSelector((state) => state.filter)
+
+  const filteredMenuItems = menuItems.filter(
+    (item) =>
+      item.name.toLowerCase().includes(filter.toLowerCase()) ||
+      item.category.toLowerCase().includes(filter.toLowerCase()) ||
+      item.options.some((option) =>
+        option.toLowerCase().includes(filter.toLowerCase())
+      )
+  )
 
   useEffect(() => {
     getDocs(colRef)
@@ -139,7 +149,7 @@ const Menu = () => {
   return (
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
-        rows={menuItems}
+        rows={filteredMenuItems}
         columns={columns}
         pageSize={5}
         rowsPerPageOptions={[5, 10, 20]}

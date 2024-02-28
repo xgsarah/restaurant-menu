@@ -4,10 +4,13 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material'
 import { Box, Button, TextField } from '@mui/material'
+import { useDispatch } from 'react-redux'
+import { filterChange } from '../reducers/filterReducer'
 
 import MenuForm from './MenuForm'
 
 const ActionMenu = () => {
+  const dispatch = useDispatch()
   const [open, setOpen] = React.useState(false)
 
   const handleClickOpen = () => {
@@ -16,6 +19,10 @@ const ActionMenu = () => {
 
   const handleClose = () => {
     setOpen(false)
+  }
+
+  const handleSearch = (value) => {
+    dispatch(filterChange(value))
   }
 
   return (
@@ -31,6 +38,7 @@ const ActionMenu = () => {
           InputProps={{
             style: { borderRadius: 30 },
           }}
+          onChange={(e) => handleSearch(e.target.value)}
         />
       </Box>
       <Button
