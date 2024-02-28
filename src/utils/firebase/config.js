@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { getFirestore, collection, getDocs } from 'firebase/firestore'
+import { getFirestore, collection } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyASaNSOxgc19QGgO9Tc-z4aoJxGIi1dKHI',
@@ -14,4 +14,7 @@ const firebaseConfig = {
 initializeApp(firebaseConfig)
 
 // eslint-disable-next-line import/prefer-default-export
-export const db = getFirestore()
+const db = getFirestore()
+const colRef = collection(db, 'menu-items')
+
+export { db, colRef }

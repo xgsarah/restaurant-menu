@@ -5,9 +5,9 @@ import { useSnackbar } from 'notistack'
 import { v4 as uuidv4 } from 'uuid'
 import { Chip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, onSnapshot } from 'firebase/firestore'
 import { setMenuItems } from '../reducers/menuReducer'
-import { db } from '../utils/firebase/config'
+import { colRef } from '../utils/firebase/config'
 
 const OptionsRenderer = ({ options }) => {
   return (
@@ -43,7 +43,6 @@ const Menu = () => {
   const menuItems = useSelector((state) => state.menu)
 
   useEffect(() => {
-    const colRef = collection(db, 'menu-items')
     getDocs(colRef)
       .then((snapshot) => {
         const items = []
@@ -55,6 +54,14 @@ const Menu = () => {
       .catch((err) => {
         enqueueSnackbar(err.message, { variant: 'error' })
       })
+
+    onSnapshot(colRef, (snapshot) => {
+      const items = []
+      snapshot.docs.forEach((doc) => {
+        items.push({ ...doc.data(), id: doc.id })
+      })
+      dispatch(setMenuItems(items))
+    })
 
     return () => {}
   }, [dispatch, enqueueSnackbar])

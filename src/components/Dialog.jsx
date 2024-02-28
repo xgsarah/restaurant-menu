@@ -1,109 +1,190 @@
-import React from 'react'
+/* eslint-disable react/jsx-props-no-spreading */
+import React, { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
 import {
   Dialog as MUIDialog,
   DialogTitle,
   DialogContent,
-  DialogContentText,
   TextField,
   DialogActions,
   Button,
   Container,
   Grid,
+  Stack,
+  Chip,
+  Fab,
 } from '@mui/material'
+import { Add as AddIcon } from '@mui/icons-material'
+import { v4 as uuidv4 } from 'uuid'
+import { useSnackbar } from 'notistack'
+import { addDoc } from 'firebase/firestore'
+import menuSchema from '../utils/schema'
+import { colRef } from '../utils/firebase/config'
 
 const Dialog = ({ open, handleClose }) => {
+  const { enqueueSnackbar } = useSnackbar()
+  const [options, setOptions] = useState([])
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: yupResolver(menuSchema),
+  })
+
+  const onSubmit = (data) => {
+    const item = { ...data, options }
+    addDoc(colRef, item)
+      .then(() => {
+        enqueueSnackbar(`Successfully added ${data.name}.`, {
+          variant: 'success',
+        })
+        handleClose()
+      })
+      .catch((err) => {
+        enqueueSnackbar(err.message, {
+          variant: 'error',
+        })
+      })
+  }
+
+  const handleAddOption = () => {
+    const option = document.getElementById('option-input').value.trim()
+    if (option && !options.includes(option)) {
+      setOptions([...options, option])
+      document.getElementById('option-input').value = ''
+    }
+  }
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      handleAddOption()
+    }
+  }
+
   return (
     <MUIDialog
       open={open}
       onClose={handleClose}
       PaperProps={{
         component: 'form',
-        onSubmit: (event) => {
-          event.preventDefault()
-          const formData = new FormData(event.currentTarget)
-          const formJson = Object.fromEntries(formData.entries())
-          const email = formJson.email
-          console.log(email)
-          handleClose()
-        },
+        onSubmit: handleSubmit(onSubmit),
+        autoComplete: 'off',
+        noValidate: true,
       }}
     >
       <Container sx={{ py: 4, px: 2 }}>
         <DialogTitle>Add new item</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
-                autoFocus
-                required
-                id="name"
-                name="name"
+                {...register('name')}
                 label="Name"
-                type="text"
+                error={!!errors.name}
+                helperText={errors.name?.message}
                 fullWidth
                 variant="outlined"
                 margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} sm={12}>
-              <TextField
-                autoFocus
                 required
-                id="category"
-                name="category"
+                autoComplete="off"
+                autoCorrect="off"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                {...register('category')}
                 label="Category"
-                type="text"
+                error={!!errors.category}
+                helperText={errors.category?.message}
                 fullWidth
                 variant="outlined"
                 margin="normal"
+                required
               />
             </Grid>
-            <Grid item xs={12} sm={12}>
+            <Grid
+              item
+              xs={12}
+              sm={12}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
               <TextField
                 autoFocus
-                id="options"
+                id="option-input"
                 name="options"
-                label="Options"
+                label="Option"
                 type="text"
-                fullWidth
                 variant="outlined"
                 margin="normal"
+                fullWidth
+                onKeyDown={handleKeyDown}
+              />
+              <Fab
+                size="medium"
+                color="secondary"
+                sx={{ mt: 1 }}
+                onClick={handleAddOption}
+              >
+                <AddIcon />
+              </Fab>
+            </Grid>
+            <Grid item xs={12}>
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                {options.map((option) => (
+                  <Chip
+                    key={uuidv4()}
+                    label={option}
+                    onDelete={() =>
+                      setOptions(options.filter((o) => o !== option))
+                    }
+                  />
+                ))}
+              </Stack>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                {...register('stock')}
+                label="Stock"
+                type="number"
+                error={!!errors.stock}
+                helperText={errors.stock?.message}
+                margin="normal"
+                fullWidth
+                defaultValue={0}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={4}>
               <TextField
-                autoFocus
-                id="cost"
-                name="cost"
-                label="cost"
+                {...register('cost')}
+                label="Cost"
                 type="number"
+                error={!!errors.cost}
+                helperText={errors.cost?.message}
                 fullWidth
                 variant="outlined"
                 margin="normal"
+                defaultValue={0}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={4}>
               <TextField
-                autoFocus
-                id="price"
-                name="price"
-                label="price"
+                {...register('price')}
+                label="Price"
                 type="number"
+                error={!!errors.price}
+                helperText={errors.price?.message}
                 fullWidth
                 variant="outlined"
                 margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} sm={12}>
-              <TextField
-                autoFocus
-                id="stock"
-                name="stock"
-                label="stock"
-                type="number"
-                fullWidth
-                variant="outlined"
-                margin="normal"
+                defaultValue={0}
               />
             </Grid>
           </Grid>
