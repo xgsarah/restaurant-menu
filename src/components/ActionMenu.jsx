@@ -5,7 +5,7 @@ import {
 } from '@mui/icons-material'
 import { Box, Button, TextField } from '@mui/material'
 
-import Dialog from './Dialog'
+import MenuForm from './MenuForm'
 
 const ActionMenu = () => {
   const [open, setOpen] = React.useState(false)
@@ -41,7 +41,7 @@ const ActionMenu = () => {
       >
         Add Item
       </Button>
-      <Dialog open={open} handleClose={handleClose} />
+      <MenuForm open={open} handleClose={handleClose} />
     </Box>
   )
 }

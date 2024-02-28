@@ -22,7 +22,7 @@ import { addDoc } from 'firebase/firestore'
 import menuSchema from '../utils/schema'
 import { colRef } from '../utils/firebase/config'
 
-const Dialog = ({ open, handleClose }) => {
+const MenuForm = ({ open, handleClose }) => {
   const { enqueueSnackbar } = useSnackbar()
   const [options, setOptions] = useState([])
   const {
@@ -202,4 +202,4 @@ const Dialog = ({ open, handleClose }) => {
   )
 }
 
-export default Dialog
+export default MenuForm
